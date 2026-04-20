@@ -3,35 +3,48 @@
 public class GameManager : MonoBehaviour
 {
     public GameObject[] prefabs;
-    public GameObject gameOverPanel; // Kéo bảng chữ THUA vào đây ở Inspector
+    public GameObject gameOverPanel;
+
+    // Thêm một "cái khóa" để kiểm soát trạng thái game
+    private bool isGameOver = false;
 
     void Start()
     {
-        Time.timeScale = 1; // Đảm bảo game chạy bình thường khi khởi động
+        Time.timeScale = 1;
         SpawnNext();
     }
 
     public void SpawnNext()
     {
+        // KẾT THÚC VÒNG LẶP: Nếu đã thua thì quay xe luôn, KHÔNG sinh thêm gạch!
+        if (isGameOver) return;
+
         int randomIndex = Random.Range(0, prefabs.Length);
 
-        // Sinh gạch ở vị trí xuất phát
         GameObject nextTetromino = Instantiate(prefabs[randomIndex], new Vector3(4, 18, 0), Quaternion.identity);
 
-        // KIỂM TRA THUA CUỘC NGAY KHI VỪA SINH RA
+        // Nếu khối gạch vừa sinh ra đã chạm vào gạch cũ
         if (!nextTetromino.GetComponent<Tetromino>().IsValidPosition())
         {
+            // TẮT NGAY TỨC KHẮC quyền điều khiển của viên gạch này để nó không gọi Update() nữa
+            nextTetromino.GetComponent<Tetromino>().enabled = false;
+
+            // Kích hoạt hàm thua cuộc
             GameOver();
         }
     }
 
     void GameOver()
     {
-        Debug.Log("Game Over!");
+        isGameOver = true; // Sập cầu dao! Khóa không cho sinh gạch nữa
+
+        Debug.Log("GAME OVER! Gạch đã chạm đỉnh!");
+
         if (gameOverPanel != null)
         {
-            gameOverPanel.SetActive(true); // Hiện bảng chữ THUA
+            gameOverPanel.SetActive(true);
         }
-        Time.timeScale = 0; // Dừng toàn bộ game
+
+        Time.timeScale = 0;
     }
 }
